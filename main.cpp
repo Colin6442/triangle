@@ -51,13 +51,21 @@ void Rotate(int turn, float* length, GLfloat *vertices, float* currentAngle, dou
 	vertices[4] = (GLfloat)(*length * sin(*angleB * PI / 180.0) + vertices[7]);
 }
 
+void Movement(double xVel, double yVel, GLfloat *vertices, float currentAngle) {
+	vertices[0] += (GLfloat)(xVel * cos(currentAngle * PI / 180.0)); vertices[1] += (GLfloat)(yVel * sin(currentAngle * PI / 180.0));
+	vertices[3] += (GLfloat)(xVel * cos(currentAngle * PI / 180.0)); vertices[4] += (GLfloat)(yVel * sin(currentAngle * PI / 180.0));
+	vertices[6] += (GLfloat)(xVel * cos(currentAngle * PI / 180.0)); vertices[7] += (GLfloat)(yVel * sin(currentAngle * PI / 180.0));
+}
+
 int main(){
 	// Initialize GLFW
+	int windowX = 900;
+	int windowY = 900;
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	GLFWwindow* window = glfwCreateWindow(1600, 900, "Test Thing", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(windowX, windowY, "Test Thing", NULL, NULL);
 	if (window == NULL){
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -66,7 +74,7 @@ int main(){
 	glfwMakeContextCurrent(window);
 	gladLoadGL();
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-	glViewport(0, 0, 900, 900);
+	glViewport(0, 0, windowX, windowY);
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -96,6 +104,8 @@ int main(){
 	double angleA = acos(vertices[0] / length) * 180.0/PI;
 	double angleB = acos(vertices[3] / length) * 180.0/PI;
 	float slope = 0;
+	double xVel = 0;
+	double yVel = 0;
 
 	GLuint VAO, VBO;
 	glGenVertexArrays(1, &VAO);
@@ -123,9 +133,19 @@ int main(){
 		//cos(angle * PI / 180.0);
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			vertices[0] += (GLfloat)(0.01 * cos(currentAngle * PI / 180.0)); vertices[1] += (GLfloat)(0.01 * sin(currentAngle * PI / 180.0));
-			vertices[3] += (GLfloat)(0.01 * cos(currentAngle * PI / 180.0)); vertices[4] += (GLfloat)(0.01 * sin(currentAngle * PI / 180.0));
-			vertices[6] += (GLfloat)(0.01 * cos(currentAngle * PI / 180.0)); vertices[7] += (GLfloat)(0.01 * sin(currentAngle * PI / 180.0));
+
+			xVel += 0.001;
+			yVel += 0.001;
+
+		
+		}
+		else {
+			if (xVel > 0) {
+				xVel -= 0.0005;
+			}
+			if (yVel > 0) {
+				yVel -= 0.0005;
+			}
 
 		}
 
@@ -135,10 +155,8 @@ int main(){
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			vertices[0] = -0.05f; vertices[1] = 0.1f;
-			vertices[3] = 0.05f; vertices[4] = 0.1f;
-			vertices[6] = 0; vertices[7] = 0;
-
+			xVel = 0;
+			yVel = 0;
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
@@ -147,7 +165,7 @@ int main(){
 		}
 
 		
-
+		Movement(xVel, yVel, vertices, currentAngle);
 
 
 
