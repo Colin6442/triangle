@@ -41,7 +41,15 @@ void CalculateFrameRate(){
 	}
 }
 
-
+void Rotate(int turn, float* length, GLfloat *vertices, float* currentAngle, double* angleA, double* angleB) {
+	*currentAngle += turn;
+	*angleA += turn;
+	*angleB += turn;
+	vertices[0] = (GLfloat)(*length * cos(*angleA * PI / 180.0) + vertices[6]);
+	vertices[1] = (GLfloat)(*length * sin(*angleA * PI / 180.0) + vertices[7]);
+	vertices[3] = (GLfloat)(*length * cos(*angleB * PI / 180.0) + vertices[6]);
+	vertices[4] = (GLfloat)(*length * sin(*angleB * PI / 180.0) + vertices[7]);
+}
 
 int main(){
 	// Initialize GLFW
@@ -85,8 +93,8 @@ int main(){
 
 	float currentAngle = 270;
 	float length = sqrt(pow((float)vertices[0], 2.0f) + pow((float)vertices[1], 2.0f));
-	float angleA = acos(vertices[0] / length) * 180.0/PI;
-	float angleB = acos(vertices[3] / length) * 180.0/PI;
+	double angleA = acos(vertices[0] / length) * 180.0/PI;
+	double angleB = acos(vertices[3] / length) * 180.0/PI;
 	float slope = 0;
 
 	GLuint VAO, VBO;
@@ -106,39 +114,27 @@ int main(){
 
 
 	float one = 0.07f, two = 0.13f, three = 0.17f;
-	glClearColor(one, two, three, 1.0f);
-	//loop
 	//0,1
 	//3,4
 	//6,7
-	float x = -(vertices[0] + vertices[3]) / 2;
-	float y = -(vertices[1] + vertices[4]) / 2;
 
 	while (!glfwWindowShouldClose(window)){
-
 		//acos(val * PI / 180.0);
 		//cos(angle * PI / 180.0);
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			vertices[0] += 0.01 * cos(currentAngle * PI / 180.0); vertices[1] += 0.01 * sin(currentAngle * PI / 180.0);
-			vertices[3] += 0.01 * cos(currentAngle * PI / 180.0); vertices[4] += 0.01 * sin(currentAngle * PI / 180.0);
-			vertices[6] += 0.01 * cos(currentAngle * PI / 180.0); vertices[7] += 0.01 * sin(currentAngle * PI / 180.0);
+			vertices[0] += (GLfloat)(0.01 * cos(currentAngle * PI / 180.0)); vertices[1] += (GLfloat)(0.01 * sin(currentAngle * PI / 180.0));
+			vertices[3] += (GLfloat)(0.01 * cos(currentAngle * PI / 180.0)); vertices[4] += (GLfloat)(0.01 * sin(currentAngle * PI / 180.0));
+			vertices[6] += (GLfloat)(0.01 * cos(currentAngle * PI / 180.0)); vertices[7] += (GLfloat)(0.01 * sin(currentAngle * PI / 180.0));
 
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			currentAngle += 5;
-			angleA += 5;
-			angleB += 5;
-			vertices[0] = (float)length * cos(angleA * PI / 180.0) + vertices[6];
-			vertices[1] = (float)length * sin(angleA * PI / 180.0) + vertices[7];
-			vertices[3] = (float)length * cos(angleB * PI / 180.0) + vertices[6];
-			vertices[4] = (float)length * sin(angleB * PI / 180.0) + vertices[7];
+			Rotate(5, &length, vertices, &currentAngle, &angleA, &angleB);
 
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			//std::cout << "s press" << std::endl;
 			vertices[0] = -0.05f; vertices[1] = 0.1f;
 			vertices[3] = 0.05f; vertices[4] = 0.1f;
 			vertices[6] = 0; vertices[7] = 0;
@@ -146,16 +142,21 @@ int main(){
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			currentAngle -= 5;
-			angleA -= 5;
-			angleB -= 5;
-			vertices[0] = (float)length * cos(angleA * PI / 180.0) + vertices[6];
-			vertices[1] = (float)length * sin(angleA * PI / 180.0) + vertices[7];
-			vertices[3] = (float)length * cos(angleB * PI / 180.0) + vertices[6];
-			vertices[4] = (float)length * sin(angleB * PI / 180.0) + vertices[7];
+			Rotate(-5, &length, vertices, &currentAngle, &angleA, &angleB);
+
 		}
 
 		
+
+
+
+
+
+
+
+
+
+
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO); //puts VBO in
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //sets value
@@ -168,7 +169,6 @@ int main(){
 		glfwPollEvents();
 		Sleep(10);
 		//CalculateFrameRate();
-
 	}
 
 	glDeleteVertexArrays(1, &VAO);

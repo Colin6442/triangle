@@ -1,0 +1,2 @@
+C:\Users\colin\Desktop\openGL_tests\Tutorial\x64\Debug\Tutorial.exe
+C:\Users\colin\Desktop\openGL_tests\x64\Debug\Tutorial.exe
