@@ -57,6 +57,10 @@ void Movement(double xVel, double yVel, GLfloat *vertices, float currentAngle) {
 	vertices[6] += (GLfloat)(xVel * cos(currentAngle * PI / 180.0)); vertices[7] += (GLfloat)(yVel * sin(currentAngle * PI / 180.0));
 }
 
+void checkBox() {
+
+}
+
 int main(){
 	// Initialize GLFW
 	int windowX = 900;
@@ -128,7 +132,7 @@ int main(){
 	//3,4
 	//6,7
 
-	while (!glfwWindowShouldClose(window)){
+	while (!glfwWindowShouldClose(window)) {
 		//acos(val * PI / 180.0);
 		//cos(angle * PI / 180.0);
 
@@ -137,7 +141,7 @@ int main(){
 			xVel += 0.001;
 			yVel += 0.001;
 
-		
+
 		}
 		else {
 			if (xVel > 0) {
@@ -164,10 +168,17 @@ int main(){
 
 		}
 
-		
+
 		Movement(xVel, yVel, vertices, currentAngle);
 
-
+		for (int i = 0; i < 9; i++) {
+			if (vertices[i] > 1) {
+				vertices[i] = -1;
+			}
+			else if (vertices[i] < -1) {
+				vertices[i] = 1;
+			}
+		}
 
 
 
