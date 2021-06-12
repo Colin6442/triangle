@@ -1,29 +1,18 @@
-#include<iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include<glad/glad.h>
-#include <Windows.h>
 #include <iostream>
-#include <cstdlib>
-#include<GLFW/glfw3.h>
-#include<math.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+#include <glad/glad.h>
+#include <Windows.h>
+//#include <cstdlib>
+#include <GLFW/glfw3.h>
+#include <math.h>
+#include "shaderClass.h"
+#include "VAO.h"
+#include "VBO.h"
+#include "EBO.h"
 
 #define PI 3.14159265
 
-// Vertex Shader source code
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-//Fragment Shader source code
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(0.3f, 0.8f, 0.02f, 1.0f);\n"
-"}\n\0";
 
 
 void CalculateFrameRate(){
@@ -80,22 +69,6 @@ int main(){
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	glViewport(0, 0, windowX, windowY);
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
 
 	GLfloat vertices[] = {
 		-0.05f, 0.1f, 0.0f, // Lower left corner	PointA
@@ -111,26 +84,19 @@ int main(){
 	double xVel = 0;
 	double yVel = 0;
 
-	GLuint VAO, VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
 
-	glBindVertexArray(VAO);
+	Shader shaderProgram("default.vert", "default.frag");
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	VAO VAO1;
+	VBO VBO1(vertices, sizeof(vertices));
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	VAO1.Bind();
+	VAO1.LinkVBO(VBO1, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
+	VAO1.Unbind();
+	VBO1.Unbind();
 
 	float one = 0.07f, two = 0.13f, three = 0.17f;
-	//0,1
-	//3,4
-	//6,7
 
 	while (!glfwWindowShouldClose(window)) {
 		//acos(val * PI / 180.0);
@@ -147,15 +113,29 @@ int main(){
 			if (xVel > 0) {
 				xVel -= 0.0005;
 			}
+			else if (xVel < 0) {
+				xVel = 0;
+			}
 			if (yVel > 0) {
 				yVel -= 0.0005;
+			}
+			else if (yVel < 0) {
+				yVel = 0;
 			}
 
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			Rotate(5, &length, vertices, &currentAngle, &angleA, &angleB);
+			if (xVel > 0 || yVel > 0) {
+				Rotate(5, &length, vertices, &currentAngle, &angleA, &angleB);
+			}
 
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+			if (xVel > 0 || yVel > 0) {
+				Rotate(-5, &length, vertices, &currentAngle, &angleA, &angleB);
+			}
 		}
 
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
@@ -163,20 +143,14 @@ int main(){
 			yVel = 0;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			Rotate(-5, &length, vertices, &currentAngle, &angleA, &angleB);
-
-		}
-
-
 		Movement(xVel, yVel, vertices, currentAngle);
 
 		for (int i = 0; i < 9; i++) {
 			if (vertices[i] > 1) {
-				vertices[i] = -1;
+				vertices[i] = -1-0.001;
 			}
 			else if (vertices[i] < -1) {
-				vertices[i] = 1;
+				vertices[i] = 1+0.001;
 			}
 		}
 
@@ -187,12 +161,13 @@ int main(){
 
 
 
-		glBindBuffer(GL_ARRAY_BUFFER, VBO); //puts VBO in
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //sets value
+		VBO1.Bind();
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(one, two, three, 1.0f);		
-		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
+		shaderProgram.Activate();
+		VAO1.Bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -200,9 +175,9 @@ int main(){
 		//CalculateFrameRate();
 	}
 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shaderProgram);
+	VAO1.Delete();
+	VBO1.Delete();
+	shaderProgram.Delete();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
