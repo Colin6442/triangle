@@ -103,13 +103,9 @@ int main(){
 		//cos(angle * PI / 180.0);
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-
 			xVel += 0.001;
 			yVel += 0.001;
-
-
-		}
-		else {
+		}else{
 			if (xVel > 0) {
 				xVel -= 0.0005;
 			}
