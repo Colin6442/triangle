@@ -76,6 +76,13 @@ int main(){
 		0.0f, 0.0f, 0.0f // Upper corner			PointC
 	};
 
+	GLfloat square[] = {
+	-0.1f, 0.1f, // Lower left corner	PointA
+	-0.1f, -0.1f, // Lower right corner	PointB
+	0.1f, -0.1f, // Upper corner			PointC
+	0.1f, -0.1f,
+	};
+
 	float currentAngle = 270;
 	float length = sqrt(pow((float)vertices[0], 2.0f) + pow((float)vertices[1], 2.0f));
 	double angleA = acos(vertices[0] / length) * 180.0/PI;
@@ -103,8 +110,12 @@ int main(){
 		//cos(angle * PI / 180.0);
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			xVel += 0.001;
-			yVel += 0.001;
+			if (xVel < 0.05) {
+				xVel += 0.001;
+			}
+			if (yVel < 0.05) {
+				yVel += 0.001;
+			}
 		}else{
 			if (xVel > 0) {
 				xVel -= 0.0005;
@@ -140,25 +151,26 @@ int main(){
 		}
 
 		Movement(xVel, yVel, vertices, currentAngle);
-
-		for (int i = 0; i < 9; i++) {
-			if (vertices[i] > 1) {
-				vertices[i] = -1-0.001;
-			}
-			else if (vertices[i] < -1) {
-				vertices[i] = 1+0.001;
-			}
+		//x6,y7
+		if (vertices[6] > 1) {
+			vertices[6] = -1;//-0.001;
 		}
-
-
-
-
-
-
+		else if (vertices[6] < -1) {
+			vertices[6] = 1;//+0.001;
+		}
+		if (vertices[7] > 1) {
+			vertices[7] = -1;// -0.001;
+		}
+		else if (vertices[7] < -1) {
+			vertices[7] = 1;// +0.001;
+		}
+		Rotate(0, &length, vertices, &currentAngle, &angleA, &angleB);
 
 
 		VBO1.Bind();
+		//VBOsq.Bind();
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(one, two, three, 1.0f);		
