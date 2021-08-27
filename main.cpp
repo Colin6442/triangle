@@ -50,6 +50,10 @@ void checkBox() {
 
 }
 
+void buffer(GLfloat* vertices, GLsizeiptr size) {
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+}
+
 int main(){
 	// Initialize GLFW
 	int windowX = 900;
@@ -69,18 +73,16 @@ int main(){
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 	glViewport(0, 0, windowX, windowY);
 
-
 	GLfloat vertices[] = {
 		-0.05f, 0.1f, 0.0f, // Lower left corner	PointA
 		0.05f, 0.1f, 0.0f, // Lower right corner	PointB
 		0.0f, 0.0f, 0.0f // Upper corner			PointC
 	};
 
-	GLfloat square[] = {
-	-0.1f, 0.1f, // Lower left corner	PointA
-	-0.1f, -0.1f, // Lower right corner	PointB
-	0.1f, -0.1f, // Upper corner			PointC
-	0.1f, -0.1f,
+	GLfloat other[] = {
+		0.45f, 0.1f, 0.0f, // Lower left corner	PointA
+		0.55f, 0.1f, 0.0f, // Lower right corner	PointB
+		0.5f, 0.0f, 0.0f // Upper corner			PointC
 	};
 
 	float currentAngle = 270;
@@ -96,6 +98,7 @@ int main(){
 
 	VAO VAO1;
 	VBO VBO1(vertices, sizeof(vertices));
+	//VBO1.Buffer(other, sizeof(other));
 
 	VAO1.Bind();
 	VAO1.LinkVBO(VBO1, 0);
@@ -106,77 +109,89 @@ int main(){
 	float one = 0.07f, two = 0.13f, three = 0.17f;
 
 	while (!glfwWindowShouldClose(window)) {
-		//acos(val * PI / 180.0);
-		//cos(angle * PI / 180.0);
+		if (true) {
+			if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+				if (xVel < 1.05) {
+					xVel += 0.001;
+				}
+				if (yVel < 1.05) {
+					yVel += 0.001;
+				}
+			}
+			else {
+				if (xVel > 0) {
+					xVel -= 0.0005;
+				}
+				else if (xVel < 0) {
+					xVel = 0;
+				}
+				if (yVel > 0) {
+					yVel -= 0.0005;
+				}
+				else if (yVel < 0) {
+					yVel = 0;
+				}
 
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-			if (xVel < 0.05) {
-				xVel += 0.001;
 			}
-			if (yVel < 0.05) {
-				yVel += 0.001;
+
+			if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+				if (xVel > 0 || yVel > 0) {
+					Rotate(5, &length, vertices, &currentAngle, &angleA, &angleB);
+				}
+
 			}
-		}else{
-			if (xVel > 0) {
-				xVel -= 0.0005;
+
+			if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+				if (xVel > 0 || yVel > 0) {
+					Rotate(-5, &length, vertices, &currentAngle, &angleA, &angleB);
+				}
 			}
-			else if (xVel < 0) {
+
+			if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
 				xVel = 0;
-			}
-			if (yVel > 0) {
-				yVel -= 0.0005;
-			}
-			else if (yVel < 0) {
 				yVel = 0;
 			}
 
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-			if (xVel > 0 || yVel > 0) {
-				Rotate(5, &length, vertices, &currentAngle, &angleA, &angleB);
+			Movement(xVel, yVel, vertices, currentAngle);
+			//x6,y7
+			if (vertices[6] > 1) {
+				vertices[6] = -1;//-0.001;
 			}
-
-		}
-
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-			if (xVel > 0 || yVel > 0) {
-				Rotate(-5, &length, vertices, &currentAngle, &angleA, &angleB);
+			else if (vertices[6] < -1) {
+				vertices[6] = 1;//+0.001;
 			}
+			if (vertices[7] > 1) {
+				vertices[7] = -1;// -0.001;
+			}
+			else if (vertices[7] < -1) {
+				vertices[7] = 1;// +0.001;
+			}
+			Rotate(0, &length, vertices, &currentAngle, &angleA, &angleB);
 		}
-
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-			xVel = 0;
-			yVel = 0;
-		}
-
-		Movement(xVel, yVel, vertices, currentAngle);
-		//x6,y7
-		if (vertices[6] > 1) {
-			vertices[6] = -1;//-0.001;
-		}
-		else if (vertices[6] < -1) {
-			vertices[6] = 1;//+0.001;
-		}
-		if (vertices[7] > 1) {
-			vertices[7] = -1;// -0.001;
-		}
-		else if (vertices[7] < -1) {
-			vertices[7] = 1;// +0.001;
-		}
-		Rotate(0, &length, vertices, &currentAngle, &angleA, &angleB);
-
-
-		VBO1.Bind();
-		//VBOsq.Bind();
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(one, two, three, 1.0f);		
 		shaderProgram.Activate();
+		
+		VBO1.Bind();
+		VBO1.Buffer(vertices, sizeof(vertices));
 		VAO1.Bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+		VBO1.Bind();
+		VBO1.Buffer(other, sizeof(other));
+		VAO1.Bind();
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(other), other, GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		//buffer(vertices, sizeof(vertices));
+		//buffer(other, sizeof(other));
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW);
+
+
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		Sleep(10);
